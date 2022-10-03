@@ -1,0 +1,246 @@
+\documentclass{article}
+\usepackage[]{multicol}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{ifthen}
+
+\usepackage{enumitem}
+\setlist{nosep}
+\setlength\parindent{0pt}
+
+\graphicspath{ {images/} }
+
+% Reduce spacing
+\usepackage[compact]{titlesec}
+\titlespacing{\section}{0pt}{2ex}{1ex}
+\titlespacing{\subsection}{0pt}{1ex}{0ex}
+\titlespacing{\subsubsection}{0pt}{0.5ex}{0ex}
+\setlength{\leftmargini}{0.5cm}
+\setlength{\leftmarginii}{0.4cm}
+\setlength{\leftmarginiii}{0.5cm}
+\setlist[itemize,1]{leftmargin=3mm,labelindent=1mm,labelsep=1mm}
+\setlist[itemize,2]{leftmargin=4mm,labelindent=1mm,labelsep=1mm}
+\setlist[itemize,3]{leftmargin=5mm,labelindent=1mm,labelsep=1mm}
+
+\usepackage[margin=12mm, landscape]{geometry}
+
+% Tightcenter environment
+\newenvironment{tightcenter}{%
+  \setlength\topsep{0pt}
+  \setlength\parskip{0pt}
+  \begin{center}
+}{%
+  \end{center}
+}
+
+% Inline code
+\newcommand{\code}[1]{\texttt{#1}}
+
+\begin{document}
+
+\begin{multicols*}{3}
+    \noindent
+    {\LARGE CS2040S 22/23 Sem 1}
+    \section*{Orders of Growth}
+    $1 < \log n < \sqrt{n} < n < n \log n < n^2 < n^3 < 2^n < 2^{2n}$
+    $\log_a n < n^a < a^n < n! < n^n$
+
+    \subsection*{Types}
+
+    \subsection*{properties}
+    Let $T(n) = O(f(n))$ and $S(n) = O(g(n))$
+    \begin{itemize}
+        \item addition: $T(n) + S(n) = O(f(n) + g(n))$
+        \item multiplication: $T(n) * S(n) = O(f(n) * g(n))$
+        \item composition: $f_1 \circ f_2 = O(g_1 \circ g_2)$
+              \begin{itemize}
+                  \item only if both functions are increasing
+              \end{itemize}
+    \end{itemize}
+    \section{HASH TABLES}
+    \begin{itemize}
+        \item disadvantage: no successor/predecessor operation
+    \end{itemize}
+
+    \subsection{hashing}
+    Let the $m$ be the table size;
+    let $n$ be the number of items;
+    let $cost(h)$ be the cost of the hash function
+
+    \begin{itemize}
+        \item $load(\text{hash table})$, $\alpha = \frac{n}{m}$
+              = average number of items per bucket
+              = expected number of items per bucket
+    \end{itemize}
+
+    \subsubsection{hashing assumptions}
+    \begin{itemize}
+        \item \textbf{simple uniform hashing assumption}
+              \begin{itemize}
+                  \item every key has an equal probability of being mapped to every bucket
+                  \item keys are mapped independently
+              \end{itemize}
+        \item \textbf{uniform hashing assumption}
+              \begin{itemize}
+                  \item every key is equally likely to be mapped to every permutation, independent of every other key.
+                  \item NOT fulfilled by linear probing
+              \end{itemize}
+    \end{itemize}
+
+    \subsubsection{properties of a good hash function}
+    \begin{enumerate}
+        \item able to enumerate all possible buckets - $h:U \to \{1..m\}$
+              \begin{itemize}
+                  \item for every bucket $j$, $\exists i$ such that $h(key, i) = j$
+              \end{itemize}
+        \item simple uniform hashing assumption
+    \end{enumerate}
+
+    \subsection{chaining}
+    \begin{itemize}
+        \item time complexity
+              \begin{itemize}
+                  \item \code{insert(key, value)} - $O(1 + cost(h)) \implies O(1)$
+                        \begin{itemize}
+                            \item for $n$ items: expected maximum cost
+                                  \begin{itemize}
+                                      \item $= O(\log n)$
+                                      \item $= \Theta(\frac{\log n}{\log(\log(n))})$
+                                  \end{itemize}
+                        \end{itemize}
+                  \item \code{search(key)}
+                        \begin{itemize}
+                            \item worst case: $O(n + cost(h)) \implies O(n)$
+                            \item expected case: $O(\frac{n}{m} + cost(h)) \implies O(1)$
+                        \end{itemize}
+              \end{itemize}
+        \item total space: $O(m + n)$
+    \end{itemize}
+
+    \subsection{open addressing - linear probing}
+    \begin{itemize}
+        \item $hash(k) = (k{\%}m + i)\%TABLE\_SIZE$
+              \\(if collide, check next slot)
+        \item \code{delete(key)}
+              \begin{itemize}
+                  \item use a \textbf{tombstone value} - DON'T set to \code{null}
+              \end{itemize}
+        \item \textbf{performance}
+              \begin{itemize}
+                  \item if the table is $\frac{1}{4}$ full, there will be clusters of size $\Theta(\log n)$
+                  \item expected cost of an operation i.e no. of probes $\leq \frac{1}{1 - \alpha}$
+                        (assume $\alpha < 1$ and uniform hashing)
+              \end{itemize}
+        \item \textbf{advantages}
+              \begin{itemize}
+                  \item saves space (use empty slots vs linked list)
+                  \item better cache performance (table is one place in memory)
+                  \item rarely allocate memory (no new list-node allocation)
+              \end{itemize}
+        \item \textbf{disadvantages}
+              \begin{itemize}
+                  \item more sensitive to choice of hash function (primary clustering)
+                  \item more sensitive to load (as $\alpha \to 1$, performance degrades)
+              \end{itemize}
+    \end{itemize}
+
+    \subsubsection{modified linear probing}
+    \begin{lstlisting}
+hash(key)
+(hash(key) + 1 * d) % m
+(hash(key) + 2 * d) % m
+(hash(key) + 3 * d) % m
+    \end{lstlisting}
+    $d$ is some constant integer $>1$ and is co-prime to $m$
+    \subsubsection{quadratic probing}
+    \begin{lstlisting}[mathescape]
+hash(key) 
+(hash(key) + 1) % m
+(hash(key) + 4) % m
+(hash(key) + 9) % m
+:
+(hash(key) + $k^2$) % m
+\end{lstlisting}
+    \begin{itemize}
+        \item If $\alpha < 0.5$ and $m$ is prime, then we can always
+              find an empty slot.
+    \end{itemize}
+    \subsubsection{double hashing}
+    $(hash(key) + i * hash_2(key)) \% TABLE\_SIZE$
+    \begin{itemize}
+        \item \textbf{Secondary hash function must not evaluate
+                  to 0}
+        \item To solve this problem, simply change $hash_2(key)$
+              to: $hash_2(key) = n - (key \% n)$
+    \end{itemize}
+    \emph{Prevents secondary clustering}
+
+\end{multicols*}
+\begin{multicols}{2}
+    \begin{tightcenter}
+        $
+            \begin{array}{| c | c | c | c | c | c |}
+                \hline\textbf{sort} & \textbf{best} & \textbf{average} & \textbf{worst} & \textbf{stable?} & \textbf{in-place}
+
+                \\\hline\text{bubble} & \Omega(n) & O(n^2) & O(n^2) & \checkmark & \checkmark
+                \\\hline\text{radix} & \Omega(n) & O(n) & O(n) & \checkmark & \times
+
+                \\\hline\text{selection} & \Omega(n^2) & O(n^2) & O(n^2) & \times & \checkmark
+
+                \\\hline\text{insertion} & \Omega(n) & O(n^2) & O(n^2) & \checkmark & \checkmark
+
+                \\\hline\text{merge} & \Omega(n\log n) & O(n\log n) & O(n\log n) & \checkmark & \times
+
+                \\\hline\text{quick} & \Omega(n\log n) & O(n\log n) & O(n^2) & \times & \checkmark
+                \\\hline\text{heap} & \Omega(n\log n) & O(n\log n) & O(n\log n) & \times & \times
+                \\\hline
+            \end{array}
+        $\
+        \begin{tabular}{| c | c |}
+            \multicolumn{2}{c}{sorting invariants}
+            \\\hline\textbf{sort} & \textbf{invariant} (after $k$ iterations)
+            \\\hline bubble & largest $k$ elements are sorted
+            \\\hline selection & smallest $k$ elements are sorted
+            \\\hline insertion & first $k$ slots are sorted
+            \\\hline merge & given subarray is sorted
+            \\\hline quick & partition is in the right position
+            \\\hline
+        \end{tabular} \begin{tabular}{| c | c |}
+            \multicolumn{2}{c}{searching}      \\\hline
+            \textbf{search} & \textbf{average} \\\hline
+            linear          & $O(n)$           \\\hline
+            binary          & $O(\log n)$      \\\hline
+            quickSelect     & $O(n)$           \\\hline
+        \end{tabular}
+
+        data structures assuming $O(1)$ comparison cost
+        \\* \begin{tabular}{| c | c | c |}\hline
+            \textbf{data structure} & \textbf{search}             & \textbf{insert}       \\\hline
+            sorted array            & $O(\log n)$                 & $O(n)$                \\\hline
+            unsorted array          & $O(n)$                      & $O(1)$                \\\hline
+            linked list             & $O(n)$                      & $O(1)$                \\\hline
+            tree (kd/(a, b)/binary) & $O(\log n)$ or $O(h)$       & $O(\log n)$ or $O(h)$ \\\hline
+            trie                    & $O(L)$                      & $O(L)$                \\\hline
+            symbol table            & $O(1)$                      & $O(1)$                \\\hline
+            chaining                & $O(n)$                      & $O(1)$                \\\hline
+            open addressing         & $\frac{1}{1-\alpha} = O(1)$ & $O(1)$                \\\hline
+        \end{tabular}
+
+        orders of growth
+        \begin{align*}
+            T(n) & = 2T(\frac{n}{2}) + O(n) & \Rightarrow O(n \log n)
+            \\ T(n) &= T(\frac{n}{2}) + O(n) &\Rightarrow O(n)
+            \\ T(n) &= 2T(\frac{n}{2}) + O(1) &\Rightarrow O(n)
+            \\ T(n) &= T(\frac{n}{2}) + O(1) &\Rightarrow O(\log n)
+            \\ T(n) &= 2T(n - 1) + O(1) &\Rightarrow O(2^n)
+            \\ T(n) &= 2T(\frac{n}{2}) + O(n \log n) &\Rightarrow O(n(\log n)^2)
+            \\ T(n) &= 2T(\frac{n}{4}) + O(1) &\Rightarrow O(\sqrt{n})
+            \\ T(n) &= T(n - c) + O(n) &\Rightarrow O(n^2)
+        \end{align*}
+    \end{tightcenter}
+\end{multicols}
+
+\end{document}

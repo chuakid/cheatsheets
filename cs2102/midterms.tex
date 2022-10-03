@@ -5,6 +5,8 @@
 \usepackage{amsfonts}
 \usepackage{listings}
 \usepackage{graphicx}
+\usepackage{caption}
+
 \graphicspath{ {images/} }
 
 % Reduce spacing
@@ -12,6 +14,10 @@
 \titlespacing{\section}{0pt}{2ex}{1ex}
 \titlespacing{\subsection}{0pt}{1ex}{0ex}
 \titlespacing{\subsubsection}{0pt}{0.5ex}{0ex}
+\usepackage{enumitem}
+\setlist{nosep}
+\setlength\parindent{0pt}
+
 
 % Outer join symbols
 \def\ojoin{\setbox0=\hbox{$\bowtie$}%
@@ -24,7 +30,6 @@
 
 \begin{document}
 \begin{multicols*}{2}
-    \noindent
     {\LARGE CS2102}
     \section*{Relational Algebra}
     $\sigma_{condition}(R)$ Select tuples from R that satisfy C eg. $\sigma_{a=b}(C)$\\
@@ -40,7 +45,7 @@
     $p_{l}(R)$ Renames attributes from R \\
     Two formats: \\
     $p_{(a,b,c)}(A)$ renames them in order \\
-    $p_{(a \leftarrow a1,b \leftarrow b1,c\ leftarrow c1)}(A)$ renames them accordingly
+    $p_{(a \leftarrow a1,b \leftarrow b1,c \leftarrow c1)}(A)$ renames a1 to a, b1 to b, c1 to c
     \subsection*{Set Operators}
     $A \cup B$\\ $A \cap B$\\ $A - B$ \\
     Cross Product: $A \times B$
@@ -143,9 +148,7 @@ ADD CONSTRAINT eid_fkey FOREIGN KEY (eid)
 REFERENCES Employees (id);
 
 ALTER TABLE Teams DROP CONSTRAINT eid_fkey;
-
     \end{lstlisting}
-    \columnbreak
     \section*{ERD}
     \subsection*{Attributes}
     \begin{itemize}
@@ -162,8 +165,8 @@ ALTER TABLE Teams DROP CONSTRAINT eid_fkey;
         \item Derived attribute: derived from other attributes
               (dashed oval)
     \end{itemize}
-    Summary of participation constraints\\
-    \includegraphics{summary_of_participation_constraints.png}
+    \includegraphics[scale=0.5]{summary_of_participation_constraints.png}
+    \captionof{figure}{Summary of Participation Constraints}
     \subsection*{Implementations for constraints}
     Many A to Many B: Make a table A{\_}B that contains primary keys of both A and B\\
     One A to Many B: Put A's primary key in B\\
